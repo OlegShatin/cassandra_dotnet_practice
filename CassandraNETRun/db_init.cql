@@ -13,3 +13,9 @@ select * from flights where fl_from='BBC' and fl_to = 'CCC';
 select count(*) from flights;
 
 drop table flights;
+
+--counters--
+
+CREATE TABLE city_usage
+                (cu_city varchar primary key,
+                cu_usage counter);

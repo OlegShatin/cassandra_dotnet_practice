@@ -11,10 +11,41 @@ namespace CassandraNETRun
 {
     class Program
     {
+        private static ISession session;
+
         static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<FlightsCassandraBenchs>();
+            //var summary = BenchmarkRunner.Run<FlightsCassandraBenchs>();
+            CounterCase();
+            
             Console.ReadKey();
+        }
+
+        public static void CounterCase()
+        {
+            var cluster = Cluster.Builder()
+                .AddContactPoints("127.0.0.1")
+                .Build();
+            // Connect to the nodes using a keyspace
+            session = cluster.Connect("airtickets");
+            var input = Console.ReadLine().Split(',').Select(city => city.Trim());
+            foreach (var cityName in input)
+            {
+                CounterUsage(cityName);
+            }
+            var rs = session.Execute("SELECT * FROM city_usage;");
+            foreach (var row in rs.GetRows())
+            {
+                var city = row.GetValue<string>("cu_city");
+                var count = row.GetValue<long>("cu_usage");
+                // Do something with the value
+                Console.WriteLine($"City: {city} - {count}");
+            }
+        }
+        public static void CounterUsage(string cityName)
+        {
+            var query = "UPDATE city_usage SET cu_usage = cu_usage+1 WHERE cu_city='" + cityName + "';";
+            session.Execute(query);
         }
 
         private static void SimpleConsole()
